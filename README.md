@@ -1,1 +1,1 @@
-"# opengl-honey-gems" 
+# opengl-honey-gems
