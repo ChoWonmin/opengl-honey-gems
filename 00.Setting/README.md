@@ -29,7 +29,7 @@ https://www.glfw.org/
 - property > configure > Linker > input
     - Additionnal Dependencies
     - ```
-        oepngl32.lib
+        opengl32.lib
         glfw3.lib
     - oepngl32.lib;glfw3.lib;%(AdditionnalDenpendencies)
 
