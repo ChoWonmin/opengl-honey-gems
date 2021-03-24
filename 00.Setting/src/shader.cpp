@@ -33,22 +33,35 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
     return id;
 }
 
-static int createShader(const std::string& vertextShader, const std::string& fragmentShader)
+static int createShader(const std::string& vertextShader, const std::string& fragmentShader, const std::string& geometryShader = "")
 {
     unsigned int program = glCreateProgram();
 
     std::cout << "compile vertext shader" << std::endl;
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
+    unsigned int gs;
+    if (geometryShader.length() > 0) {
+        std::cout << "compile geometry shader" << std::endl;
+        gs = compileShader(GL_GEOMETRY_SHADER, geometryShader);
+    }
+
     std::cout << "compile fragment shader" << std::endl;
     unsigned int vs = compileShader(GL_VERTEX_SHADER, vertextShader);
 
     glAttachShader(program, vs);
+    if (geometryShader.length() > 0) {
+        glAttachShader(program, gs);
+    }
     glAttachShader(program, fs);
     glLinkProgram(program);
     glValidateProgram(program);
 
     glDeleteShader(vs);
+    if (geometryShader.length() > 0) {
+        glDeleteShader(gs);
+    }
+    
     glDeleteShader(fs);
  
     return program;
@@ -79,41 +92,59 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    float positions[6] = {
-        -0.5f, -0.5f,
-         0.0f,  0.8f,
-         0.5f, -0.5f,
+    float position[] = {
+        0.0f,  0.5f, 0.0f, //vertex 1  위 중앙
+        0.5f, -0.5f, 0.0f, //vertex 2  오른쪽 아래
+        -0.5f, -0.5f, 0.0f //vertex 3  왼쪽 아래
     };
 
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), position, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
     std::string vertexShader =
         "#version 330 core\n"
-        "\n"
         "layout(location = 0) in vec4 position;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = position;\n"
-        "}\n";
+        "void main()"
+        "{"
+        "gl_Position = position;"
+        "}";
+
+    const GLchar* geometryShaderSource =
+        "#version 330 core\n"
+        "layout (points) in;"
+        "layout (line_strip, max_vertices = 256) out;"
+        ""
+        "void makePoint(int num, vec3 point, float length, float angle)"
+        "{"
+        ""
+        "EmitVertex();"
+        "}"
+        ""
+        "void main()"
+        "{"
+        "gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);"
+        "EmitVertex();"
+        "gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);"
+        "EmitVertex();"
+        "gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.1, 0.1, 0.0);"
+        "EmitVertex();"
+        "EndPrimitive();"
+        "}";
 
     std::string fragmentShader =
         "#version 330 core\n"
-        "\n"
-        "layout(location = 0) out vec4 color;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   color = vec4(0.5, 0.0, 0.0, 1.0);\n"
-        "}\n";
+        "out vec4 fragmentColor;"
+        "void main()"
+        "{"
+        "fragmentColor = vec4(0.0, 1.0, 1.0, 1.0);"
+        "}";
 
-    unsigned int program = createShader(vertexShader, fragmentShader);
+    unsigned int program = createShader(vertexShader, fragmentShader, geometryShaderSource);
     glUseProgram(program);
 
     /* Loop until the user closes the window */
@@ -122,7 +153,7 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_POINTS, 0, 3);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
