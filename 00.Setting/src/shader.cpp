@@ -3,56 +3,45 @@
 
 #include <iostream>
 
-static unsigned int CompileShader(unsigned int type, const std::string& source)
+static unsigned int compileShader(unsigned int type, const std::string& source)
 {
     unsigned int id = glCreateShader(type);
     const char* src = source.c_str();
 
-    std::cout << src << std::endl;
-
-    glShaderSource(type, 1, &src, NULL);
+    glShaderSource(id, 1, &src, nullptr);
     glCompileShader(id);
 
-    /*
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
 
     if (result == GL_FALSE) {
         int length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        
+        char* message = (char*) malloc( length * sizeof(char) );
 
-        std::cout << length << std::endl;
-
-        //        char* message = (char*) alloca( length * sizeof(char) );
         glGetShaderInfoLog(id, length, &length, message);
+        
         std::cout << "Failed to compile shader!!" << std::endl;
         std::cout << message << std::endl;
 
+        free(message);
         glDeleteShader(id);
         return 0;
-    }
-    */
-
-    GLint result;
-    GLchar errorLog[512];
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-    if (!result)
-    {
-        glGetShaderInfoLog(id, 512, NULL, errorLog);
-        std::cerr << "ERROR: vertex shader 컴파일 실패\n" << errorLog << std::endl;
-        glDeleteShader(id);
-        return false;
     }
 
     return id;
 }
 
-static int CreateShader(const std::string& vertextShader, const std::string& fragmentShader)
+static int createShader(const std::string& vertextShader, const std::string& fragmentShader)
 {
     unsigned int program = glCreateProgram();
 
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertextShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    std::cout << "compile vertext shader" << std::endl;
+    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
+
+    std::cout << "compile fragment shader" << std::endl;
+    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertextShader);
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);
@@ -124,7 +113,7 @@ int main(void)
         "   color = vec4(0.5, 0.0, 0.0, 1.0);\n"
         "}\n";
 
-    unsigned int program = CreateShader(vertexShader, fragmentShader);
+    unsigned int program = createShader(vertexShader, fragmentShader);
     glUseProgram(program);
 
     /* Loop until the user closes the window */
