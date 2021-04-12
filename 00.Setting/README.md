@@ -18,8 +18,14 @@
     - input > Additional Dependencies
     - ``` glfw3.lib
 
+## direcotry
 
-# index
+- src
+    - main.cpp
+- res
+    - shaders
+
+## index
 
 1. setup
 2. glew

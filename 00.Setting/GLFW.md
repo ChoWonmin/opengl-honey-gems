@@ -1,7 +1,4 @@
-# Create OpenGL window
-
-glfw, glew, glad
-
+# 직접 GLFW 빌드 설정
 
 ## glfw
 https://www.glfw.org/
